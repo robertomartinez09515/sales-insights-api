@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processSalesData } from "@/libs/dataProcessor";
 import { generateAISummary } from "@/libs/openAIHelper";
+import { validateRequestBody } from "@/libs/validateRequestBody";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    if (!Array.isArray(body.sales)) {
-      return NextResponse.json({ error: "Invalid sales data format" }, { status: 400 });
+    const validationResponse = await validateRequestBody(body);
+    if (!validationResponse.isValid) {
+    return NextResponse.json({ error: validationResponse.message, details: validationResponse.details }, { status: 400 });
     }
 
     const insights = processSalesData(body.sales);
